@@ -6,13 +6,15 @@
 
 
 #define TYPE 0 // for future improvements (0 - just bytes, 1 - interpet as string and so on).
-               // Now it doesn't matter.
+                // Now it doesn't matter.
+#define OUT_FILENAME "output.png"
+
 
 int main()
 {
 	std::cout << "\nEncoding...\n\n";
-	hider_png::encode("input.png", {'a', 'b', 'c'}, TYPE); // example 1
-	// hider_png::encode("input.png", {(0xA), (0xB), (0xC), (0xD), (0xE), (0xF), (1), (2), (3)}, TYPE); // example 2
+	hider_png::encode("input.png", {'a', 'b', 'c'}, TYPE, OUT_FILENAME); // example 1
+	// hider_png::encode("input.png", {(0xA), (0xB), (0xC), (0xD), (0xE), (0xF), (1), (2), (3)}, TYPE, OUT_FILENAME); // example 2
 
 
 	std::cout << "\n\nDecoding...\n";

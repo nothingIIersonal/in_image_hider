@@ -5,9 +5,8 @@ namespace hider_png_internal
 {
 
 
-#define  OUT_FILENAME                "output.png"
 #define  SIGN_PX_CNT                 0x4
-#define  DATA_TYPE_BITS_CNT			 0x1
+#define  DATA_TYPE_BITS_CNT          0x1
 
 
 // Filling signature bits with 0x7, 0x1, 0x3, 0x5, ...
@@ -36,7 +35,7 @@ const uint64_t get_dss(const png::image<png::rgb_pixel> &image)
 	return ceil( std::log2( image.get_width() * image.get_height() * 3 - SIGN_PX_CNT * 3 - DATA_TYPE_BITS_CNT ) );
 }
 
-void encode(png::image<png::rgb_pixel> &image, const bdb<uint8_t> &bits)
+void encode(png::image<png::rgb_pixel> &image, const bdb<uint8_t> &bits, const std::string &output_filename)
 {
 	const uint64_t bits_size = bits.size();
 
@@ -74,20 +73,20 @@ void encode(png::image<png::rgb_pixel> &image, const bdb<uint8_t> &bits)
 		}
 	}
 
-	image.write(OUT_FILENAME);
+	image.write(output_filename);
 }
 
 // TODO... maybe later, idn...
 void decode()
 {
-
+	// It's still empty...
 }
 
 
 } // end hider_png_internal
 
 
-void hider_png::encode(const std::string &filename, const std::vector<uint8_t> &data, const uint8_t &data_type)
+void hider_png::encode(const std::string &filename, const std::vector<uint8_t> &data, uint8_t data_type, const std::string &output_filename)
 {
 	png::image<png::rgb_pixel> image(filename);
 
@@ -134,6 +133,7 @@ void hider_png::encode(const std::string &filename, const std::vector<uint8_t> &
 			return bits;
 		}();
 
+#ifdef IN_IMAGE_HIDER_DEBUG
 	std::cout << "RECEIVED BITS FOR ENCODE - " << bits << "\n\n";
 
 	std::cout << "SIGNATURE SIZE - " << SIGN_PX_CNT * 3 << " bit.\n";
@@ -144,8 +144,9 @@ void hider_png::encode(const std::string &filename, const std::vector<uint8_t> &
 	std::cout << "TOTAL BITS - " << bits_cnt << " bit.\n\n";
 
 	std::cout << "PIXELS USED - " << ceil(bits_cnt / 3) << " px.\n";
+#endif // IN_IMAGE_HIDER_DEBUG
 
-	hider_png_internal::encode(image, bits);
+	hider_png_internal::encode(image, bits, output_filename);
 }
 
 std::vector<uint8_t> hider_png::decode(const std::string &filename)
@@ -193,7 +194,10 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 	if (signature_bits_received != signature_bits)
 		exit(1);
 
+#ifdef IN_IMAGE_HIDER_DEBUG
 	std::cout << "\nSIGNATURE CORRECT - " << signature_bits_received << "\n";
+#endif // IN_IMAGE_HIDER_DEBUG
+
 //
 
 
@@ -214,6 +218,7 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 	{
 		for (uint8_t i = 0; (i < 3) && type_bit_i; ++i, --type_bit_i)
 		{
+			std::cout << type_bits_received << std::endl;
 			type_bits_received <<= 1;
 
 			if (color_i == BLUE)
@@ -221,7 +226,7 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 				type_bits_received |= bdb<uint8_t>(DATA_TYPE_BITS_CNT, image[y][x].red & 0b00000001);
 				color_i = RED;
 			}
-			else if (RED)
+			else if (color_i == RED)
 			{
 				type_bits_received |= bdb<uint8_t>(DATA_TYPE_BITS_CNT, image[y][x].green & 0b00000001);
 				color_i = GREEN;
@@ -240,7 +245,10 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 		}
 	}
 
+#ifdef IN_IMAGE_HIDER_DEBUG
 	std::cout << "TYPE - " << type_bits_received << "\n";
+#endif // IN_IMAGE_HIDER_DEBUG
+
 //
 
 // GETTING DATA SIZE
@@ -280,7 +288,10 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 		}
 	}
 
+#ifdef IN_IMAGE_HIDER_DEBUG
 	std::cout << "DSS - " << dss << " | DATA SIZE - " << data_size << "\n";
+#endif // IN_IMAGE_HIDER_DEBUG
+
 //
 
 // GETTING DATA SIZE
@@ -320,7 +331,10 @@ std::vector<uint8_t> hider_png::decode(const std::string &filename)
 		}
 	}
 
+#ifdef IN_IMAGE_HIDER_DEBUG
 	std::cout << "DATA - " << data << "\n";
+#endif
+
 //
 
 	const std::vector<uint8_t> data_bytes =
